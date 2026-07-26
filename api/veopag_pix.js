@@ -1,3 +1,5 @@
+const https = require('https');
+
 // Simple token cache in memory (works within serverless instance lifecycle)
 let tokenCache = {
     token: null,
@@ -12,6 +14,54 @@ const products = {
     'discount': 25.90
 };
 
+function makeRequest(url, method, headers, body = null) {
+    return new Promise((resolve, reject) => {
+        try {
+            const urlObj = new URL(url);
+            const options = {
+                hostname: urlObj.hostname,
+                port: 443,
+                path: urlObj.pathname + urlObj.search,
+                method: method,
+                headers: {
+                    ...headers
+                }
+            };
+
+            let postData = '';
+            if (body) {
+                postData = JSON.stringify(body);
+                options.headers['Content-Length'] = Buffer.byteLength(postData);
+            }
+
+            const req = https.request(options, (res) => {
+                let data = '';
+                res.on('data', (chunk) => {
+                    data += chunk;
+                });
+                res.on('end', () => {
+                    resolve({
+                        status: res.statusCode,
+                        headers: res.headers,
+                        body: data
+                    });
+                });
+            });
+
+            req.on('error', (err) => {
+                reject(err);
+            });
+
+            if (body) {
+                req.write(postData);
+            }
+            req.end();
+        } catch (e) {
+            reject(e);
+        }
+    });
+}
+
 async function getVeoPagToken() {
     const now = Math.floor(Date.now() / 1000);
     if (tokenCache.token && tokenCache.expiresAt > now) {
@@ -19,20 +69,16 @@ async function getVeoPagToken() {
     }
 
     try {
-        const response = await fetch('https://api.veopag.com/api/auth/login', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'accept': 'application/json'
-            },
-            body: JSON.stringify({
-                client_id: CLIENT_ID,
-                client_secret: CLIENT_SECRET
-            })
+        const response = await makeRequest('https://api.veopag.com/api/auth/login', 'POST', {
+            'Content-Type': 'application/json',
+            'accept': 'application/json'
+        }, {
+            client_id: CLIENT_ID,
+            client_secret: CLIENT_SECRET
         });
 
         if (response.status === 200) {
-            const data = await response.json();
+            const data = JSON.parse(response.body);
             if (data.token) {
                 tokenCache = {
                     token: data.token,
@@ -106,20 +152,15 @@ module.exports = async function handler(req, res) {
                 sck: body.sck || ''
             };
 
-            const response = await fetch('https://api.veopag.com/api/payments/deposit', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'accept': 'application/json',
-                    'Authorization': 'Bearer ' + token
-                },
-                body: JSON.stringify(payload)
-            });
+            const response = await makeRequest('https://api.veopag.com/api/payments/deposit', 'POST', {
+                'Content-Type': 'application/json',
+                'accept': 'application/json',
+                'Authorization': 'Bearer ' + token
+            }, payload);
 
-            const responseText = await response.text();
             let data = {};
             try {
-                data = JSON.parse(responseText);
+                data = JSON.parse(response.body);
             } catch (e) {}
 
             if (response.status === 200 || response.status === 201) {
@@ -171,15 +212,15 @@ module.exports = async function handler(req, res) {
                 });
             }
 
-            const response = await fetch('https://api.veopag.com/api/transactions/deposit?transaction_id=' + encodeURIComponent(transactionId), {
-                method: 'GET',
-                headers: {
-                    'accept': 'application/json',
-                    'Authorization': 'Bearer ' + token
-                }
+            const response = await makeRequest('https://api.veopag.com/api/transactions/deposit?transaction_id=' + encodeURIComponent(transactionId), 'GET', {
+                'accept': 'application/json',
+                'Authorization': 'Bearer ' + token
             });
 
-            const data = await response.json();
+            let data = {};
+            try {
+                data = JSON.parse(response.body);
+            } catch (e) {}
 
             if (response.status === 200) {
                 let status = 'waiting_payment';
