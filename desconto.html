@@ -1284,20 +1284,24 @@ async function generatePix(e) {
     document.getElementById('pix-step-loading').style.display = 'block';
     
     try {
-        const formData = new FormData();
-        formData.append('product', currentProduct);
-        formData.append('name', name);
-        formData.append('document', documentStr);
+        const payload = {
+            product: currentProduct,
+            name: name,
+            document: documentStr
+        };
         
         // Append tracking parameters from URL if present
         const urlParams = new URLSearchParams(window.location.search);
         urlParams.forEach((val, key) => {
-            formData.append(key, val);
+            payload[key] = val;
         });
         
-        const response = await fetch('veopag_pix.php?action=create', {
+        const response = await fetch('/api/veopag_pix?action=create', {
             method: 'POST',
-            body: formData
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
         });
         
         const result = await response.json();
@@ -1342,7 +1346,7 @@ function startCheckingStatus() {
         if (!currentTransactionId) return;
         
         try {
-            const response = await fetch(`veopag_pix.php?action=status&transactionId=${currentTransactionId}`);
+            const response = await fetch(`/api/veopag_pix?action=status&transactionId=${currentTransactionId}`);
             const result = await response.json();
             
             if (result.success && result.paid) {
