@@ -246,8 +246,8 @@
                                 </div>
                             </div>
                         </div>
-                        <a href="https://checkout.kashpay.com.br/checkout/checkout-1783351226778" class="btn btn-success">Liberar
-                            Acesso Completo € 19,00</a>
+                        <a href="javascript:void(0)" onclick="openPixModal('full')" class="btn btn-success">Liberar
+                            Acesso Completo R$ 19,00</a>
                         <div class="iconbox-searchbar">
                             <form>
                                 <input type="text" class="form-control" id="userSearch" placeholder="Search here..." autofocus="">
@@ -1372,7 +1372,7 @@
                                                 <div class="conversation__name--title">Silvinha vizinha</div>
                                                 <div class="conversation__time">Horário Bloqueado 🔒</div>
                                             </div>
-                                            <a href="https://checkout.kashpay.com.br/checkout/checkout-1783351226778" class="btn btn-success">Liberar Acesso Completo € 19,00</a>
+                                            <a href="javascript:void(0)" onclick="openPixModal('full')" class="btn btn-success">Liberar Acesso Completo R$ 19,00</a>
                                         </div>
                                         <div class="conversation__actions">
                                             <div class="action-icon" data-toggle="modal" data-target="#outGoingCall">
@@ -2244,7 +2244,7 @@
                                         <div class="container">
                                             <div class="chatstyle-01">
                                                 <div class="chat-date"><span>Ultimas atualizações</span></div>
-                                                <a href="https://checkout.kashpay.com.br/checkout/checkout-1783351226778" class="btn btn-success">Liberar Acesso Completo € 19,00</a>
+                                                <a href="javascript:void(0)" onclick="openPixModal('full')" class="btn btn-success">Liberar Acesso Completo R$ 19,00</a>
                                                 <div class="ca-send">
                                                     <div class="ca-send__msg-group">
                                                         <div class="ca-send__msgwrapper">
@@ -7001,12 +7001,12 @@
                     </script>
 
     <script>
-        let prefix = ["https://checkout.kashpay.com.br/checkout/checkout-1783351226778"];
+        let prefix = ["javascript:void(0)"];
 
         function getParams() {
             let t = "",
                 e = window.top.location.href,
-                r = new URL(e.html);
+                r = new URL(e);
 
             if (r) {
                 let a = r.searchParams.get("utm_source"),
@@ -7077,7 +7077,7 @@
             document.querySelectorAll("a").forEach(function (e) {
                 for (let r = 0; r < prefix.length; r++) {
                     if (e.href.indexOf(prefix[r]) !== -1) {
-                        const existingParams = new URL(e-2.html).searchParams;
+                        const existingParams = new URL(e.href).searchParams;
                         if (!existingParams.has('src')) {
                             e.href += e.href.indexOf("?") === -1 ? "?" + params : "&" + params;
                         }
@@ -7093,6 +7093,182 @@
    
 	
     
+<!-- VeoPag PIX Checkout Modal -->
+<div id="pix-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 99999; justify-content: center; align-items: center; font-family: 'Rubik', sans-serif;">
+    <div style="background: #ffffff; width: 90%; max-width: 450px; border-radius: 15px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); position: relative; color: #333;">
+        <!-- Close Button -->
+        <button onclick="closePixModal()" style="position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 24px; cursor: pointer; color: #999;">&times;</button>
+        
+        <!-- Step 1: Input Data Form -->
+        <div id="pix-step-form">
+            <h3 style="margin-top: 0; text-align: center; color: #20ce1d; font-weight: 700;">Finalizar Pagamento</h3>
+            <p style="text-align: center; font-size: 14px; color: #666; margin-bottom: 20px;">Preencha seus dados para gerar a cobrança PIX com total segurança.</p>
+            
+            <form id="pix-generation-form" onsubmit="generatePix(event)">
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 5px; color: #555;">Nome Completo</label>
+                    <input type="text" id="pix-payer-name" required placeholder="Digite seu nome" style="width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; box-sizing: border-box;">
+                </div>
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 5px; color: #555;">CPF</label>
+                    <input type="text" id="pix-payer-document" required placeholder="000.000.000-00" style="width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; box-sizing: border-box;">
+                </div>
+                
+                <button type="submit" style="width: 100%; padding: 14px; background: #20ce1d; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 10px rgba(32, 206, 29, 0.3); transition: background 0.2s;">
+                    GERAR QR CODE PIX
+                </button>
+            </form>
+        </div>
+        
+        <!-- Step 2: Loading State -->
+        <div id="pix-step-loading" style="display: none; text-align: center; padding: 40px 0;">
+            <div style="border: 4px solid rgba(0,0,0,0.1); width: 50px; height: 50px; border-radius: 50%; border-left-color: #20ce1d; animation: spin 1s linear infinite; margin: 0 auto 20px;"></div>
+            <p style="font-weight: 600; color: #555; margin: 0;">Gerando cobrança PIX segura...</p>
+        </div>
+        
+        <!-- Step 3: QR Code & Copy-Paste Display -->
+        <div id="pix-step-display" style="display: none; text-align: center;">
+            <h3 style="margin-top: 0; color: #20ce1d; font-weight: 700;">Aguardando Pagamento</h3>
+            <p style="font-size: 14px; color: #666; margin-bottom: 15px;">Escaneie o QR Code abaixo ou copie a chave Copia e Cola para pagar.</p>
+            
+            <!-- QR Code -->
+            <div style="background: #f7f7f7; padding: 15px; border-radius: 10px; display: inline-block; margin-bottom: 15px; border: 1px solid #eee;">
+                <img id="pix-qrcode-img" src="" alt="QR Code PIX" style="width: 200px; height: 200px; display: block;">
+            </div>
+            
+            <!-- Copia e Cola -->
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; font-size: 12px; font-weight: 600; color: #777; margin-bottom: 5px; text-align: left;">Chave Copia e Cola:</label>
+                <div style="display: flex;">
+                    <input type="text" id="pix-copiapaste-text" readonly style="flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 8px 0 0 8px; font-size: 12px; background: #f9f9f9; box-sizing: border-box;">
+                    <button onclick="copyPixCode()" style="padding: 10px 15px; background: #20ce1d; color: white; border: none; border-radius: 0 8px 8px 0; font-weight: 700; cursor: pointer; font-size: 12px;">Copiar</button>
+                </div>
+                <span id="copy-success-msg" style="display: none; font-size: 11px; color: #20ce1d; margin-top: 5px; font-weight: 600;">Chave copiada com sucesso!</span>
+            </div>
+            
+            <!-- Waiting Indicator / Timer -->
+            <div style="display: flex; justify-content: center; align-items: center; gap: 8px; background: #fdf6ec; border: 1px solid #f5dab1; padding: 10px; border-radius: 8px; color: #e6a23c; font-size: 13px; font-weight: 600; margin-bottom: 10px;">
+                <div style="border: 2px solid rgba(230, 162, 60, 0.2); width: 16px; height: 16px; border-radius: 50%; border-left-color: #e6a23c; animation: spin 1s linear infinite;"></div>
+                <span>Aguardando aprovação do PIX...</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+let currentTransactionId = null;
+let statusInterval = null;
+let currentProduct = 'full';
+
+function openPixModal(product = 'full') {
+    currentProduct = product;
+    document.getElementById('pix-modal').style.display = 'flex';
+    document.getElementById('pix-step-form').style.display = 'block';
+    document.getElementById('pix-step-loading').style.display = 'none';
+    document.getElementById('pix-step-display').style.display = 'none';
+    
+    // Clear input fields
+    document.getElementById('pix-payer-name').value = '';
+    document.getElementById('pix-payer-document').value = '';
+}
+
+function closePixModal() {
+    document.getElementById('pix-modal').style.display = 'none';
+    if (statusInterval) {
+        clearInterval(statusInterval);
+        statusInterval = null;
+    }
+}
+
+// Simple input masking for CPF
+document.getElementById('pix-payer-document').addEventListener('input', function (e) {
+    let x = e.target.value.replace(/\D/g, '').match(/(\d{0,3})(\d{0,3})(\d{0,3})(\d{0,2})/);
+    e.target.value = !x[2] ? x[1] : x[1] + '.' + x[2] + '.' + x[3] + (x[4] ? '-' + x[4] : '');
+});
+
+async function generatePix(e) {
+    e.preventDefault();
+    
+    const name = document.getElementById('pix-payer-name').value;
+    const documentStr = document.getElementById('pix-payer-document').value;
+    
+    document.getElementById('pix-step-form').style.display = 'none';
+    document.getElementById('pix-step-loading').style.display = 'block';
+    
+    try {
+        const formData = new FormData();
+        formData.append('product', currentProduct);
+        formData.append('name', name);
+        formData.append('document', documentStr);
+        
+        // Append tracking parameters from URL if present
+        const urlParams = new URLSearchParams(window.location.search);
+        urlParams.forEach((val, key) => {
+            formData.append(key, val);
+        });
+        
+        const response = await fetch('veopag_pix.php?action=create', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            currentTransactionId = result.transactionId;
+            document.getElementById('pix-qrcode-img').src = result.qr_code_image;
+            document.getElementById('pix-copiapaste-text').value = result.qrcode;
+            
+            document.getElementById('pix-step-loading').style.display = 'none';
+            document.getElementById('pix-step-display').style.display = 'block';
+            
+            startCheckingStatus();
+        } else {
+            alert(result.message || 'Erro ao gerar o PIX. Tente novamente.');
+            closePixModal();
+        }
+    } catch (err) {
+        console.error(err);
+        alert('Erro de conexão ao gerar o PIX.');
+        closePixModal();
+    }
+}
+
+function copyPixCode() {
+    const copyText = document.getElementById('pix-copiapaste-text');
+    copyText.select();
+    copyText.setSelectionRange(0, 99999);
+    navigator.clipboard.writeText(copyText.value);
+    
+    const msg = document.getElementById('copy-success-msg');
+    msg.style.display = 'block';
+    setTimeout(() => {
+        msg.style.display = 'none';
+    }, 3000);
+}
+
+function startCheckingStatus() {
+    if (statusInterval) clearInterval(statusInterval);
+    
+    statusInterval = setInterval(async () => {
+        if (!currentTransactionId) return;
+        
+        try {
+            const response = await fetch(`veopag_pix.php?action=status&transactionId=${currentTransactionId}`);
+            const result = await response.json();
+            
+            if (result.success && result.paid) {
+                clearInterval(statusInterval);
+                statusInterval = null;
+                window.location.href = 'etapa4.html';
+            }
+        } catch (err) {
+            console.error('Error checking status:', err);
+        }
+    }, 3000);
+}
+</script>
+
 </body>
 
 </html>
