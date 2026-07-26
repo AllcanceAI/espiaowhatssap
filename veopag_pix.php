@@ -5,13 +5,13 @@ header('Access-Control-Allow-Origin: *');
 // ==========================================
 // CONFIGURATION
 // ==========================================
-define('VEOPAG_CLIENT_ID', 'SUA_CLIENT_ID_AQUI');
-define('VEOPAG_CLIENT_SECRET', 'SUA_CLIENT_SECRET_AQUI');
+define('VEOPAG_CLIENT_ID', 'cli_0a848b556b07cf8949b10e3a2a9b91c8');
+define('VEOPAG_CLIENT_SECRET', 'qDoNQNv6rdHMmvHJMjciPGjaaImefkbjCqH-t3XulKBozlzIoQbNEFvNR-O1aTH8zwygNHwS4ecdbiflpDaiHa83JobuLW04JG0F');
 
 // Predefined products (to prevent price tampering)
 $products = [
-    'full' => 19.00,
-    'discount' => 9.90
+    'full' => 25.90,
+    'discount' => 25.90
 ];
 
 // ==========================================
