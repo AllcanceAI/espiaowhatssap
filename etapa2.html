@@ -402,11 +402,117 @@
                                                 <!--       <div style="position:relative;width:100%;padding: 56.25% 0 0;"> 
 												<div style="position:absolute;top:0;width:100%;height:100%;-webkit-backdrop-filter:blur(5px);backdrop-filter:blur(5px); background: #000; border-radius: 10px;"></div> 
 												</div>  -->
-												
-												
-											    <!-- Vsl Video Local -->
-                                                <video src="video/Etapa%2002%20-%20WW.mp4" poster="video/poster.jpg" controls autoplay playsinline style="display: block; margin: 0 auto; width: 100%; border-radius: 10px; background-color: black;"></video>
-                                                <!-- Vsl Video Local -->
+												                                                <!-- Vsl Video Local Custom -->
+                                                <div id="video-wrapper" style="position: relative; width: 100%; border-radius: 10px; overflow: hidden; background-color: black; box-shadow: 0 4px 15px rgba(0,0,0,0.5);">
+                                                    <video id="vsl-video" src="video/Etapa%2002%20-%20WW.mp4" poster="video/poster.jpg" playsinline style="display: block; width: 100%; height: auto; pointer-events: none;" oncontextmenu="return false;"></video>
+                                                    
+                                                    <!-- Play Overlay Button -->
+                                                    <div id="play-overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10; transition: opacity 0.3s ease;">
+                                                        <div style="background: #20ce1d; border-radius: 50%; width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px rgba(32, 206, 29, 0.6); transition: transform 0.2s ease;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+                                                            <svg viewBox="0 0 24 24" width="40" height="40" fill="white" style="margin-left: 5px;">
+                                                                <path d="M8 5v14l11-7z"/>
+                                                            </svg>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <script type="text/javascript">
+                                                    document.addEventListener('DOMContentLoaded', () => {
+                                                        const video = document.getElementById('vsl-video');
+                                                        const playOverlay = document.getElementById('play-overlay');
+                                                        const ctaDelay = document.getElementById('cta-delay');
+                                                        let ctaShown = false;
+                                                        let furthestTime = 0;
+                                                        
+                                                        // Check if already displayed in localStorage
+                                                        const alreadyDisplayedKey = 'alreadyElsDisplayed280';
+                                                        const alreadyElsDisplayed = localStorage.getItem(alreadyDisplayedKey);
+
+                                                        function showCTA() {
+                                                            if (ctaShown) return;
+                                                            ctaShown = true;
+                                                            
+                                                            // Show the container and elements
+                                                            if (ctaDelay) {
+                                                                ctaDelay.style.display = 'block';
+                                                            }
+                                                            const ctas = document.querySelectorAll('.cta');
+                                                            ctas.forEach(el => {
+                                                                el.style.display = 'block';
+                                                            });
+                                                            
+                                                            localStorage.setItem(alreadyDisplayedKey, 'true');
+                                                            
+                                                            if (typeof start_vsltimer === 'function') {
+                                                                try {
+                                                                    start_vsltimer();
+                                                                } catch (e) {
+                                                                    console.error(e);
+                                                                }
+                                                            }
+                                                        }
+
+                                                        if (alreadyElsDisplayed === 'true') {
+                                                            showCTA();
+                                                        }
+
+                                                        // Autoplay attempt
+                                                        video.play().then(() => {
+                                                            playOverlay.style.opacity = '0';
+                                                            setTimeout(() => { playOverlay.style.display = 'none'; }, 300);
+                                                        }).catch(err => {
+                                                            // Autoplay blocked
+                                                            playOverlay.style.display = 'flex';
+                                                        });
+
+                                                        // Click overlay to play
+                                                        playOverlay.addEventListener('click', () => {
+                                                            video.play().then(() => {
+                                                                playOverlay.style.opacity = '0';
+                                                                setTimeout(() => { playOverlay.style.display = 'none'; }, 300);
+                                                            });
+                                                        });
+
+                                                        // Disable pausing (force play)
+                                                        video.addEventListener('pause', () => {
+                                                            if (video.currentTime < video.duration - 0.5) {
+                                                                video.play();
+                                                            }
+                                                        });
+
+                                                        // Prevent seeking (rewind or fast forward)
+                                                        video.addEventListener('timeupdate', () => {
+                                                            if (video.currentTime > furthestTime + 1.5 || video.currentTime < furthestTime - 1.5) {
+                                                                video.currentTime = furthestTime;
+                                                            } else {
+                                                                furthestTime = video.currentTime;
+                                                            }
+                                                            
+                                                            // Show CTA when 15 seconds remaining
+                                                            if (video.duration && video.currentTime >= (video.duration - 15)) {
+                                                                showCTA();
+                                                            }
+                                                        });
+
+                                                        video.addEventListener('seeking', () => {
+                                                            if (video.currentTime > furthestTime + 1.5 || video.currentTime < furthestTime - 1.5) {
+                                                                video.currentTime = furthestTime;
+                                                            }
+                                                        });
+
+                                                        // Prevent keyboard controls (spacebar, arrow keys)
+                                                        window.addEventListener('keydown', (e) => {
+                                                            if (e.code === 'Space' || e.code === 'ArrowLeft' || e.code === 'ArrowRight' || e.code === 'ArrowUp' || e.code === 'ArrowDown') {
+                                                                const activeEl = document.activeElement;
+                                                                if (activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA')) {
+                                                                    return;
+                                                                }
+                                                                e.preventDefault();
+                                                            }
+                                                        });
+                                                    });
+                                                </script>
+                                                <!-- Vsl Video Local Custom -->
 
 
 
@@ -512,12 +618,7 @@
     </div>
 </center>
 
-<script>
-    // Delay reduzido para 5 segundos no modo demonstracao local
-    setTimeout(function () {
-        document.getElementById("cta-delay").style.display = "block";
-    }, 5000);
-</script>
+
                                         </div>
                                         <section
                                             class="elementor-section elementor-inner-section elementor-element elementor-element-44e459a elementor-section-boxed elementor-section-height-default elementor-section-height-default"
@@ -1381,79 +1482,7 @@ if (typeof window !== 'undefined') {
                     </script>
 					
 					
-	<script type="text/javascript">
 
-	document.addEventListener("DOMContentLoaded", function() {
-
-
-    var SECONDS_TO_DISPLAY = 280; //tempo do video vsl em segundos 4 e 40 segundos = 280
-
-    var CLASS_TO_DISPLAY = ".cta";
-	
-	
-    var attempts = 0;
-
-    var elsHiddenList = [];
-
-    var elsDisplayed = false;
-
-    var elsHidden = document.querySelectorAll(CLASS_TO_DISPLAY);
-
-    var alreadyDisplayedKey = `alreadyElsDisplayed${SECONDS_TO_DISPLAY}`
-
-    var alreadyElsDisplayed = localStorage.getItem(alreadyDisplayedKey);
-
-    setTimeout(function () { elsHiddenList = Array.prototype.slice.call(elsHidden); }, 0);
-
-    var showHiddenElements = function () {
-
-      elsDisplayed = true;
-
-      elsHiddenList.forEach((e) => e.style.display = "block");
-
-      localStorage.setItem(alreadyDisplayedKey, true)
-
-    }
-
-    var startWatchVideoProgress = function () {
-
-      if (typeof smartplayer === 'undefined' || !(smartplayer.instances && smartplayer.instances.length)) {
-
-        if (attempts >= 10) return;
-
-        attempts += 1;
-
-        return setTimeout(function () { startWatchVideoProgress() }, 1000);
-
-      }
-
-      smartplayer.instances[0].on('timeupdate', () => {
-
-        if (elsDisplayed || smartplayer.instances[0].smartAutoPlay) return;
-
-        if (smartplayer.instances[0].video.currentTime < SECONDS_TO_DISPLAY) return;
-
-        showHiddenElements();
-		start_vsltimer();
-
-      })
-
-    }
-
-    if (alreadyElsDisplayed === 'true') {
-
-      setTimeout(function () { showHiddenElements();start_vsltimer(); }, 100);
-
-    } else {
-
-      startWatchVideoProgress()
-
-    }
-
-  });
-  
-
-</script>
 
 
 
