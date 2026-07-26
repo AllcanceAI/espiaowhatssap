@@ -164,13 +164,14 @@ module.exports = async function handler(req, res) {
             } catch (e) {}
 
             if (response.status === 200 || response.status === 201) {
-                if (data.transactionId && data.qrcode) {
-                    const qrCodeText = data.qrcode;
+                const pixData = data.qrCodeResponse || data;
+                if (pixData.transactionId && pixData.qrcode) {
+                    const qrCodeText = pixData.qrcode;
                     const qrCodeImageUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=' + encodeURIComponent(qrCodeText);
 
                     return res.status(200).json({
                         success: true,
-                        transactionId: data.transactionId,
+                        transactionId: pixData.transactionId,
                         qrcode: qrCodeText,
                         qr_code_image: qrCodeImageUrl,
                         amount: amount
