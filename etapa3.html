@@ -246,7 +246,7 @@
                                 </div>
                             </div>
                         </div>
-                        <a href="javascript:void(0)" onclick="openPixModal('full')" class="btn btn-success">Liberar
+                        <a href="desconto.html" class="btn btn-success">Liberar
                             Acesso Completo - De <span style="text-decoration: line-through;">R$ 99,99</span> por R$ 25,90</a>
                         <div class="iconbox-searchbar">
                             <form>
@@ -1372,7 +1372,7 @@
                                                 <div class="conversation__name--title">Silvinha vizinha</div>
                                                 <div class="conversation__time">Horário Bloqueado 🔒</div>
                                             </div>
-                                            <a href="javascript:void(0)" onclick="openPixModal('full')" class="btn btn-success">Liberar Acesso Completo - De <span style="text-decoration: line-through;">R$ 99,99</span> por R$ 25,90</a>
+                                            <a href="desconto.html" class="btn btn-success">Liberar Acesso Completo - De <span style="text-decoration: line-through;">R$ 99,99</span> por R$ 25,90</a>
                                         </div>
                                         <div class="conversation__actions">
                                             <div class="action-icon" data-toggle="modal" data-target="#outGoingCall">
@@ -2244,7 +2244,7 @@
                                         <div class="container">
                                             <div class="chatstyle-01">
                                                 <div class="chat-date"><span>Ultimas atualizações</span></div>
-                                                <a href="javascript:void(0)" onclick="openPixModal('full')" class="btn btn-success">Liberar Acesso Completo - De <span style="text-decoration: line-through;">R$ 99,99</span> por R$ 25,90</a>
+                                                <a href="desconto.html" class="btn btn-success">Liberar Acesso Completo - De <span style="text-decoration: line-through;">R$ 99,99</span> por R$ 25,90</a>
                                                 <div class="ca-send">
                                                     <div class="ca-send__msg-group">
                                                         <div class="ca-send__msgwrapper">
@@ -7001,7 +7001,7 @@
                     </script>
 
     <script>
-        let prefix = ["javascript:void(0)"];
+        let prefix = ["desconto.html"];
 
         function getParams() {
             let t = "",
@@ -7076,10 +7076,15 @@
         function updateLinks(params) {
             document.querySelectorAll("a").forEach(function (e) {
                 for (let r = 0; r < prefix.length; r++) {
-                    if (e.href.indexOf(prefix[r]) !== -1) {
-                        const existingParams = new URL(e.href).searchParams;
-                        if (!existingParams.has('src')) {
-                            e.href += e.href.indexOf("?") === -1 ? "?" + params : "&" + params;
+                    if (e.href && e.href.indexOf(prefix[r]) !== -1) {
+                        try {
+                            const urlObj = new URL(e.href, window.location.href);
+                            const existingParams = urlObj.searchParams;
+                            if (!existingParams.has('src')) {
+                                e.href += (e.href.indexOf("?") === -1 ? "?" : "&") + params;
+                            }
+                        } catch (err) {
+                            console.error("Invalid URL:", e.href, err);
                         }
                     }
                 }
