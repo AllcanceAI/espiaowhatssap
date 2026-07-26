@@ -189,9 +189,7 @@ module.exports = async function handler(req, res) {
             console.error('Error creating deposit:', err);
             return res.status(500).json({
                 success: false,
-                message: 'Erro interno ao processar a requisição.',
-                error: err.message,
-                stack: err.stack
+                message: 'Erro interno ao processar a requisição.'
             });
         }
     }
