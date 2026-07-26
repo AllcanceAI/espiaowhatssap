@@ -1034,34 +1034,48 @@
 		
 		const cleanedNumber = normalizeBrazilianNumber(celularParam);
 				
-        const apiUrl = `api.php?phone=${cleanedNumber}`;
+        let apiUrl = `api.php?phone=${cleanedNumber}`;
+        if (window.location.protocol === 'file:') {
+            apiUrl = `https://appespiao.online/pt/api.php?phone=${cleanedNumber}`;
+        }
         console.log('🔍 [DEBUG] URL da API:', apiUrl);
         
-        const response = await fetch(apiUrl);
-        
-        console.log('🔍 [DEBUG] Status da resposta:', response.status);
-        console.log('🔍 [DEBUG] Headers da resposta:', Object.fromEntries(response.headers.entries()));
-        
-        if (!response.ok) {
-            console.error('❌ [ERROR] Erro HTTP na API:', response.status, response.statusText);
-            throw new Error(`HTTP error! status: ${response.status}`);
+        let response;
+        let data = null;
+        try {
+            response = await fetch(apiUrl);
+            console.log('🔍 [DEBUG] Status da resposta:', response.status);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            data = await response.json();
+        } catch (err) {
+            console.warn('⚠️ [WARNING] Failed to fetch or parse primary api.php, trying fallback production API:', err);
+            try {
+                const fallbackUrl = `https://appespiao.online/pt/api.php?phone=${cleanedNumber}`;
+                response = await fetch(fallbackUrl);
+                data = await response.json();
+            } catch (fallbackErr) {
+                console.error('❌ [ERROR] Fallback API also failed:', fallbackErr);
+            }
         }
         
-        const data = await response.json();
         console.log('🔍 [DEBUG] Dados recebidos da API:', data);
         
-        if (data.urlImage) {
-            console.log('✅ [SUCCESS] Foto obtida da API:', data.urlImage);
+        const finalImage = data && (data.urlImage || data.link);
+        
+        if (finalImage) {
+            console.log('✅ [SUCCESS] Foto obtida da API:', finalImage);
             
             // Salva no localStorage com a key especificada
-            localStorage.setItem('picwppprofile', data.urlImage);
+            localStorage.setItem('picwppprofile', finalImage);
             console.log('💾 [SUCCESS] Foto salva no localStorage com key: picwppprofile');
             
             // Aplica a imagem
-            await validateAndApplyImage(data.urlImage);
+            await validateAndApplyImage(finalImage);
             console.log('🖼️ [SUCCESS] Foto atualizada com sucesso na página');
             
-            return data.urlImage;
+            return finalImage;
 			
         } else {
             console.log('❌ [WARNING] Nenhuma foto de perfil encontrada na API - aplicando imagem padrão');
